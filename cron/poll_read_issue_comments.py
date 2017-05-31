@@ -3,7 +3,6 @@ import arrow
 import json
 import os
 import re
-import copy
 from os.path import join, abspath, dirname
 
 import settings
@@ -77,14 +76,14 @@ def get_last_ran(db=None):
     if db is None:
         with open(SAVED_COMMANDS_FILE, 'r') as f:
             db = json.load(f)
-    return db.get("last_ran", None) # First time return none
+    return db.get("last_ran", None)  # First time return none
 
 
 def set_last_run(last_ran, db=None):
     if db is None:
         with open(SAVED_COMMANDS_FILE, 'r') as f:
             db = json.load(f)
-        
+
     db["last_ran"] = last_ran
     with open(SAVED_COMMANDS_FILE, 'w') as f:
         json.dump(db, f)
@@ -255,9 +254,10 @@ def handle_comment(api, issue_comment):
 def is_command(comment):
     comment = re.sub('\s+', ' ', comment)
     parsed_comment = list(map(lambda x: x.lower(), comment.split(' ')))
-    is_command = parsed_comment[0] in COMMAND_LIST # Command will be at front
+    is_command = parsed_comment[0] in COMMAND_LIST  # Command will be at front
     print("IS_COMMAND" + str(is_command))
     return is_command
+
 
 def poll_read_issue_comments(api):
     __log.info("looking for issue comments")
@@ -265,8 +265,11 @@ def poll_read_issue_comments(api):
     last_ran = get_last_ran()
     if last_ran:
         last_ran = arrow.get(last_ran)
-    paged_results = gh.comments.get_all_issue_comments(api, settings.URN, page='all', since=last_ran)
-    
+    paged_results = gh.comments.get_all_issue_comments(api,
+                                                       settings.URN,
+                                                       page='all',
+                                                       since=last_ran)
+
     # This now only finds new entries that have been either posted or updated
     # Add them to our database
     # If page=all, you have to loop through pages as well

@@ -60,34 +60,31 @@ def handle_pagination_all(method):
         is_gen |= inspect.isgenerator(page_results)
         if is_gen:
             # Generator not empty
-            condition = peek(page_results) != None
+            condition = peek(page_results) is not None
         return condition
 
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         kwargs = dict(kwargs)
         page = kwargs.pop("page", None)
-        
+
         # Want all pages
         if page == "all":
             kwargs["page"] = 1
-            items = []
             result = method(self, *args, **kwargs)
             condition = helper(result)
 
             while condition:
                 yield result
-                # items += result
                 kwargs['page'] += 1
                 try:
                     result = method(self, *args, **kwargs)
                     condition = helper(result)
                 except:
                     break
-            return items
+
         # Not all pages, 1 specific page so put param back
         kwargs["page"] = page
         yield method(self, *args, **kwargs)
-
 
     return wrapper

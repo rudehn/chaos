@@ -3,12 +3,13 @@ import arrow
 from . import prs
 from .misc import handle_pagination_all, dt_to_github_dt
 
+
 @handle_pagination_all
 def get_all_issue_comments(api, urn, page=1, since=None):
 
     if since is None:
         # Set since to be before repo was created
-        since = arrow.get("2017-05-20T00:00:00Z") 
+        since = arrow.get("2017-05-20T00:00:00Z")
 
     # Do all issue comments at once for API's sake..
     path = "/repos/{urn}/issues/comments".format(urn=urn)
