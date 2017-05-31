@@ -255,7 +255,6 @@ def is_command(comment):
     comment = re.sub('\s+', ' ', comment)
     parsed_comment = list(map(lambda x: x.lower(), comment.split(' ')))
     is_command = parsed_comment[0] in COMMAND_LIST  # Command will be at front
-    print("IS_COMMAND" + str(is_command))
     return is_command
 
 
