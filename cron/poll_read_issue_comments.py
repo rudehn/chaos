@@ -264,6 +264,7 @@ def poll_read_issue_comments(api):
     last_ran = get_last_ran()
     if last_ran:
         last_ran = arrow.get(last_ran)
+
     paged_results = gh.comments.get_all_issue_comments(api,
                                                        settings.URN,
                                                        page='all',
