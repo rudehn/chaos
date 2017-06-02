@@ -44,7 +44,13 @@ def get_reactions_for_comment(api, urn, comment_id):
     path = "/repos/{urn}/issues/comments/{comment}/reactions"\
         .format(urn=urn, comment=comment_id)
     params = {"per_page": settings.DEFAULT_PAGINATION}
-    reactions = api("get", path, params=params)
+    reactions = []
+
+    try:
+        reactions = api("get", path, params=params)
+    except:
+        pass
+
     for reaction in reactions:
         yield reaction
 
@@ -74,6 +80,15 @@ def leave_stale_comment(api, urn, pr, hours):
 :no_good: This PR has merge conflicts, and hasn't been touched in {hours} hours. Closing.
 
 Open a new PR with the merge conflicts fixed to restart voting.
+    """.strip().format(hours=hours)
+    return leave_comment(api, urn, pr, body)
+
+
+def leave_ci_failed_comment(api, urn, pr, hours):
+    body = """
+:no_good: This PR has failed to pass CI, and hasn't been touched in {hours} hours. Closing.
+
+Open a new PR with the problems fixed to restart voting.
     """.strip().format(hours=hours)
     return leave_comment(api, urn, pr, body)
 

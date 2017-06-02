@@ -16,10 +16,8 @@ def poll_issue_close_stale(api):
 
     __log.info("Checking for stale issues...")
 
-    # Get all issues
+    # Get the oldest open issues
     issues = gh.issues.get_oldest_open_issues(api, settings.URN)
-
-    __log.info(str(issues))
 
     __log.info("Got the oldest %d open issues" % len(issues))
 
@@ -36,10 +34,6 @@ def poll_issue_close_stale(api):
             __log.info("/vote close issue %d" % number)
 
             # leave an explanatory comment
-            body = "This issue hasn't been active for a while." + \
-                "To keep it open, react with :-1: on the `vote close` post."
-            gh.comments.leave_comment(api, settings.URN, number, body)
-
-            # then vote to close
-            body = "/vote close"
+            body = "/vote close \n\nThis issue hasn't been active for a while." + \
+                "To keep it open, react with :-1:"
             gh.comments.leave_comment(api, settings.URN, number, body)

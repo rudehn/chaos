@@ -45,6 +45,9 @@ def poll_pull_requests(api):
         meritocracy = top_voters | top_contributors
         __log.info("generated meritocracy: " + str(meritocracy))
 
+        with open('server/meritocracy.json', 'w') as mfp:
+            json.dump(meritocracy, mfp)
+
         needs_update = False
         for pr in prs:
             pr_num = pr["number"]
@@ -63,7 +66,7 @@ def poll_pull_requests(api):
                 voting_window = gh.voting.get_extended_voting_window(api, settings.URN)
 
             # is our PR in voting window?
-            in_window = gh.prs.is_pr_in_voting_window(pr, voting_window)
+            in_window = gh.prs.is_pr_in_voting_window(api, pr, voting_window)
 
             if is_approved:
                 __log.info("PR %d status: will be approved", pr_num)
@@ -84,13 +87,13 @@ def poll_pull_requests(api):
                     except gh.exceptions.CouldntMerge:
                         __log.info("couldn't merge PR %d for some reason, skipping",
                                    pr_num)
-                        gh.prs.label_pr(api, settings.URN, pr_num, ["can't merge"])
+                        gh.issues.label_issue(api, settings.URN, pr_num, ["can't merge"])
                         continue
 
                     gh.comments.leave_accept_comment(
                         api, settings.URN, pr_num, sha, votes, vote_total,
                         threshold, meritocracy_satisfied)
-                    gh.prs.label_pr(api, settings.URN, pr_num, ["accepted"])
+                    gh.issues.label_issue(api, settings.URN, pr_num, ["accepted"])
 
                     # chaosbot rewards merge owners with a follow
                     pr_owner = pr["user"]["login"]
@@ -109,7 +112,7 @@ def poll_pull_requests(api):
                     gh.comments.leave_reject_comment(
                         api, settings.URN, pr_num, votes, vote_total, threshold,
                         meritocracy_satisfied)
-                    gh.prs.label_pr(api, settings.URN, pr_num, ["rejected"])
+                    gh.issues.label_issue(api, settings.URN, pr_num, ["rejected"])
                     gh.prs.close_pr(api, settings.URN, pr)
                 elif vote_total < 0:
                     gh.prs.post_rejected_status(

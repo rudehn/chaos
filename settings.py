@@ -72,6 +72,16 @@ TIMEZONE = "US/Pacific"
 with open("description.txt", "r") as h:
     REPO_DESCRIPTION = h.read().strip()
 
+# repo labels
+REPO_LABELS = {
+    "accepted": "0e8a16",
+    "rejected": "ededed",
+    "conflicts": "fbca04",
+    "mergeable": "dddddd",
+    "can't merge": "ededed",
+    "ci failed": "ff9800"
+}
+
 # PRs that have merge conflicts and haven't been touched in this many hours
 # will be closed
 PR_STALE_HOURS = 36
@@ -95,3 +105,16 @@ MERITOCRACY_TOP_CONTRIBUTORS = 10
 
 # The top n voters will be allowed in the meritocracy
 MERITOCRACY_TOP_VOTERS = 10
+
+# Database settings
+DB_ADAPTER = "sqlite"
+DB_CONFIG = {
+    "filename": "db.sqlite"
+}
+# MySQL example
+# DB_CONFIG = {
+#     "host ": "localhost",
+#     "user ": "chaos",
+#     "password ": "chaos",
+#     "db ": "db"
+# }
