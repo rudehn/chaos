@@ -20,7 +20,7 @@ class DB(object):
         return DB.instance
 
     @staticmethod
-    def create_adapter(adapter_name, config) -> AbstractAdapter:
+    def create_adapter(adapter_name, config):
         """ helper method to get adapter instance """
         module_name = "lib.db_adapters." + adapter_name
         class_name = adapter_name[0].upper() + adapter_name[1:]
