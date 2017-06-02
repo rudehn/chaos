@@ -118,11 +118,15 @@ def insert_or_update(api, comment_id, issue_id, comment_txt):
     voting_window = gh.voting.get_initial_voting_window()
 
     try:
-        seconds_remaining = gh.issues.voting_window_remaining_seconds(api, settings.URN, comment_id,
+        seconds_remaining = gh.issues.voting_window_remaining_seconds(api,
+                                                                      settings.URN,
+                                                                      comment_id,
                                                                       voting_window)
-    except HTTPError:
+    except HTTPError as e:
+        __log.error("Can't get time remaining for comment: {id}".format(id=comment_id))
         # Possible comment deleted
-        pass  # handle later
+        raise e
+
     seconds_remaining = max(0, seconds_remaining)  # No negative time
     data = {
         "time_remaining": seconds_remaining,
@@ -201,9 +205,11 @@ def get_command_votes(api, urn, comment_id):
     try:
         for voter, vote in gh.voting.get_comment_reaction_votes(api, urn, comment_id):
             votes[voter] = vote
-    except HTTPError:
+    except HTTPError as e:
         # Command possibly deleted
-        pass  # Handle this later
+        __log.warning("Unable to get votes for command id: {id} - {msg}".format(id=comment_id,
+                                                                                msg=str(e)))
+        # Figure out what happened later
     return votes
 
 
@@ -349,7 +355,10 @@ def poll_read_issue_comments(api):
             }
             handle_comment(api, mock)
         except KeyError as e:
-            __log.exception("Unable to handle comment id {id}".format(id=cmd_id))
+            __log.exception("Error with comment id {id}".format(id=cmd_id))
+        except HTTPError as e:
+            __log.exception("HTTP Error occurred. Possible comment deletion")
+            # Handle comment deletion if that's the case
 
     now = arrow.utcnow()
     set_last_run(gh.misc.dt_to_github_dt(now))
