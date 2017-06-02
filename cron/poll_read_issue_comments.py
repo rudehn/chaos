@@ -208,7 +208,8 @@ def get_command_votes(api, urn, comment_id):
     except HTTPError as e:
         # Command possibly deleted
         __log.error("Unable to get votes for command id: {id} - {msg}".format(id=comment_id,
-        raise e                                                                     msg=str(e)))
+                                                                              msg=str(e)))
+        raise e
         # Figure out what happened later
     return votes
 
