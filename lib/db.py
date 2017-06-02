@@ -4,7 +4,6 @@
 from importlib import import_module
 
 import settings
-from lib.db_adapters.interface import AbstractAdapter
 
 
 class DB(object):
