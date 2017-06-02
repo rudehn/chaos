@@ -349,7 +349,7 @@ def poll_read_issue_comments(api):
             }
             handle_comment(api, mock)
         except KeyError as e:
-            __log.exception("Unable to handle comment id {id}".format(cmd_id))
+            __log.exception("Unable to handle comment id {id}".format(id=cmd_id))
 
     now = arrow.utcnow()
     set_last_run(gh.misc.dt_to_github_dt(now))
