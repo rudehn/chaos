@@ -5,9 +5,12 @@ import os
 import re
 from os.path import join, abspath, dirname
 from requests.exceptions import HTTPError
+from peewee import DoesNotExist
 
 import settings
 import github_api as gh
+
+from lib.db.models import Comment, User
 
 THIS_DIR = dirname(abspath(__file__))
 # Hopefully this isn't overwritten on pulls
@@ -93,13 +96,18 @@ def set_last_run(last_ran, db=None):
         json.dump(db, f)
 
 
-def insert_or_update(api, comment_id, issue_id, comment_txt):
-    command_history = {}
-    with open(SAVED_COMMANDS_FILE, 'r') as f:
-        command_history = json.load(f)
+def insert_or_update(api, cmd_obj):
 
-    # equivalent of db INSERT OR UPDATE.
-    comment_data = command_history.get(comment_id, None)
+    comment = Comment.get(Comment.comment_id=cmd_obj["global_comment_id"])
+    if not comment:
+        user = User(login=cmd_obj["user"]["login"],
+                           id=cmd_obj["user"]["id"])
+        user.save()
+        comment = Comment(comment_id=cmd_obj["global_comment_id"],
+                                 user=user, text=cmd_obj["comment_text"],
+                                 created_at=cmd_obj["created_at"],
+                                 updated_at=cmd_obj["updated_at"])
+        comment.save()
 
     if not comment_data:
         comment_data = {
@@ -318,6 +326,9 @@ def poll_read_issue_comments(api):
     # If page=all, you have to loop through pages as well
     for page in paged_results:
         for issue_comment in page:
+            # Get info and store in db
+            if is_command(comment_text):
+                insert_or_update(api, issue_comment)
 
             # General exception catching
             try:
