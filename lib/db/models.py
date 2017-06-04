@@ -1,8 +1,13 @@
-import peewee as pw 
+import peewee as pw
+import logging
 
-from db import DB
+from settings import DB_CONFIG
+__log = logging.getLogger("db")
 
-class BaseModel(Model):
+
+DB = pw.SqliteDatabase(DB_CONFIG["filename"])
+
+class BaseModel(pw.Model):
     class Meta:
         database = DB
 
@@ -25,17 +30,29 @@ class Issue(BaseModel):
 
 
 class ActiveIssueCommand(BaseModel):
-    comment = pw.ForeignKeyField(Comment)
+    comment = pw.ForeignKeyField(Comment, related_name="command", primary_key=True)
     issue = pw.ForeignKeyField(Issue)
-    chaos_response = pw.ForeignKeyField(Comment)
-    seconds_remaining = pw.IntegerField()
-
-    class Meta:
-        primary_key = False
+    chaos_response = pw.ForeignKeyField(Comment,
+                                        related_name="command_response",
+                                        null=True)
+    seconds_remaining = pw.IntegerField(null=True)
 
 
 class InactiveIssueCommands(BaseModel):
-    comment = pw.ForeignKeyField(Comment)
+    comment = pw.ForeignKeyField(Comment, primary_key=True)
 
-    class Meta:
-        primary_key = False
+
+class RunTimes(BaseModel):
+    command = pw.CharField(primary_key=True)
+    last_ran = pw.CharField(null=True)
+
+
+try:
+    DB.connect()
+    DB.create_tables([User, Comment, Issue, RunTimes,
+                      ActiveIssueCommand,
+                      InactiveIssueCommands], safe=True)
+    DB.close()
+except Exception as e:
+    __log.exception("Something went wrong with the db")
+    raise e

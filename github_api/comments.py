@@ -40,8 +40,8 @@ def get_all_issue_comments(api, urn, page=1, since=None):
         issue_comment["created_at"] = comment["created_at"]
         issue_comment["updated_at"] = comment["updated_at"]
         issue_comment["user"] = {
-                                    "login": comment["login"],
-                                    "id": comment["id"]
+                                    "login": comment["user"]["login"],
+                                    "id": comment["user"]["id"]
                                 }
         yield issue_comment
 
