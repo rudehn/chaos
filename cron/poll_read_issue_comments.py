@@ -52,8 +52,7 @@ def insert_or_update(api, cmd_obj):
                                        updated_at=cmd_obj["updated_at"])
 
     command, _ = ActiveIssueCommand.get_or_create(comment=comment,
-                                                  issue=issue,
-                                                  seconds_remaining=None)
+                                                  issue=issue)
  
     update_cmd(api, command, cmd_obj["comment_text"])
 

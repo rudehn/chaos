@@ -30,12 +30,15 @@ class Issue(BaseModel):
 
 
 class ActiveIssueCommand(BaseModel):
-    comment = pw.ForeignKeyField(Comment, related_name="command", primary_key=True)
+    comment = pw.ForeignKeyField(Comment, related_name="command")
     issue = pw.ForeignKeyField(Issue)
     chaos_response = pw.ForeignKeyField(Comment,
                                         related_name="command_response",
                                         null=True)
     seconds_remaining = pw.IntegerField(null=True)
+
+    class Meta:
+        primary_key = pw.CompositeKey("comment", "issue")
 
 
 class InactiveIssueCommands(BaseModel):
