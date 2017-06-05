@@ -11,7 +11,7 @@ from requests.exceptions import HTTPError
 import settings
 import github_api as gh
 
-from lib.db.models import Comment, User, ActiveIssueCommand, Issue
+from lib.db.models import Comment, User, ActiveIssueCommands, Issue
 from lib.db.models import RunTimes, InactiveIssueCommands
 
 '''
@@ -51,7 +51,7 @@ def insert_or_update(api, cmd_obj):
                                        created_at=cmd_obj["created_at"],
                                        updated_at=cmd_obj["updated_at"])
 
-    command, _ = ActiveIssueCommand.get_or_create(comment=comment,
+    command, _ = ActiveIssueCommands.get_or_create(comment=comment,
                                                   issue=issue)
  
     update_cmd(api, command, cmd_obj["comment_text"])
@@ -64,9 +64,9 @@ def update_cmd(api, cmd_obj, comment_text):
     
     seconds_remaining = get_seconds_remaining(api, comment_id)
 
-    ActiveIssueCommand.update(comment=Comment.get(comment_id=comment_id),
+    ActiveIssueCommands.update(comment=Comment.get(comment_id=comment_id),
                               seconds_remaining=seconds_remaining).where(
-                              ActiveIssueCommand.comment==comment_id).execute()
+                              ActiveIssueCommands.comment==comment_id).execute()
 
 
 def has_enough_votes(votes):
@@ -101,8 +101,8 @@ def post_command_status_update(api, cmd, has_votes):
                                             user=user, text=body,
                                             created_at=resp["created_at"],
                                             updated_at=resp["updated_at"])
-    ActiveIssueCommand.update(chaos_response=resp_comment).where(
-                              ActiveIssueCommand.comment==cmd.comment.comment_id).execute()
+    ActiveIssueCommands.update(chaos_response=resp_comment).where(
+                              ActiveIssueCommands.comment==cmd.comment.comment_id).execute()
 
 
 def can_run_vote_command(api, cmd):
@@ -113,14 +113,11 @@ def can_run_vote_command(api, cmd):
 
 
 def update_command_ran(api, comment_id, text):
-    cmd = ActiveIssueCommand.select().where(ActiveIssueCommand.comment==comment_id).first()
-    inactive_cmd = InactiveIssueCommands.create(comment=cmd.comment)
-    command = cmd.comment.text
-    resp_id = cmd.chaos_response.comment_id
+    cmd = ActiveIssueCommands.get(ActiveIssueCommands.comment==comment_id)
+    inactive_cmd = InactiveIssueCommands.get_or_create(comment=cmd.comment)
+    body = "> {command}\n\n{text}".format(command=cmd.comment.text, text=text)
+    gh.comments.edit_comment(api, settings.URN, cmd.chaos_response.comment_id, body)
     cmd.delete_instance()
-
-    body = "> {command}\n\n{text}".format(command=command, text=text)
-    gh.comments.edit_comment(api, settings.URN, resp_id, body)
 
 
 def get_command_votes(api, urn, comment_id):
@@ -249,7 +246,7 @@ def poll_read_issue_comments(api):
             if is_command(issue_comment["comment_text"]):
                 insert_or_update(api, issue_comment)
 
-    cmds = ActiveIssueCommand.select().order_by(ActiveIssueCommand.seconds_remaining)
+    cmds = ActiveIssueCommands.select().order_by(ActiveIssueCommands.seconds_remaining)
     for cmd in cmds:
         try:
             handle_comment(api, cmd)

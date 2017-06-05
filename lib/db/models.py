@@ -29,7 +29,7 @@ class Issue(BaseModel):
     issue_id = pw.IntegerField(primary_key=True)
 
 
-class ActiveIssueCommand(BaseModel):
+class ActiveIssueCommands(BaseModel):
     comment = pw.ForeignKeyField(Comment, related_name="command")
     issue = pw.ForeignKeyField(Issue)
     chaos_response = pw.ForeignKeyField(Comment,
@@ -53,7 +53,7 @@ class RunTimes(BaseModel):
 try:
     DB.connect()
     DB.create_tables([User, Comment, Issue, RunTimes,
-                      ActiveIssueCommand,
+                      ActiveIssueCommands,
                       InactiveIssueCommands], safe=True)
     DB.close()
 except Exception as e:
