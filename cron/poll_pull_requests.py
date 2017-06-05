@@ -78,7 +78,7 @@ def poll_pull_requests(api):
                     # check if we need to mention the meritocracy
                     try:
                         commit = pr["head"]["sha"]
-                        
+
                         mm, created = MeritocracyMentioned.get_or_create(commit_hash=commit)
                         if created:
                             meritocracy_mentions = meritocracy - {pr["user"]["login"].lower(),

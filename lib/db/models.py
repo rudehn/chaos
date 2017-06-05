@@ -7,6 +7,7 @@ __log = logging.getLogger("db")
 
 DB = pw.SqliteDatabase(DB_CONFIG["filename"])
 
+
 class BaseModel(pw.Model):
     class Meta:
         database = DB

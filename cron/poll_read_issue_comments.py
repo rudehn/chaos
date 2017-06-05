@@ -1,11 +1,6 @@
 import logging
 import arrow
-import json
-import os
 import re
-from os.path import join, abspath, dirname
-from requests.exceptions import HTTPError
-from peewee import DoesNotExist
 from requests.exceptions import HTTPError
 
 import settings
@@ -31,6 +26,7 @@ COMMAND_LIST = {
 
 __log = logging.getLogger("read_issue_comments")
 
+
 def get_seconds_remaining(api, comment_id):
     voting_window = gh.voting.get_initial_voting_window()
     seconds_remaining = gh.issues.voting_window_remaining_seconds(api, settings.URN, comment_id,
@@ -52,21 +48,21 @@ def insert_or_update(api, cmd_obj):
                                        updated_at=cmd_obj["updated_at"])
 
     command, _ = ActiveIssueCommands.get_or_create(comment=comment,
-                                                  issue=issue)
- 
+                                                   issue=issue)
+
     update_cmd(api, command, cmd_obj["comment_text"])
 
 
 def update_cmd(api, cmd_obj, comment_text):
     # Need to keep the comment text and time remaining fresh
     comment_id = cmd_obj.comment.comment_id
-    Comment.update(text=comment_text).where(Comment.comment_id==comment_id).execute()
-    
+    Comment.update(text=comment_text).where(Comment.comment_id == comment_id).execute()
+
     seconds_remaining = get_seconds_remaining(api, comment_id)
 
     ActiveIssueCommands.update(comment=Comment.get(comment_id=comment_id),
-                              seconds_remaining=seconds_remaining).where(
-                              ActiveIssueCommands.comment==comment_id).execute()
+                               seconds_remaining=seconds_remaining).where(
+                               ActiveIssueCommands.comment == comment_id).execute()
 
 
 def has_enough_votes(votes):
@@ -102,7 +98,7 @@ def post_command_status_update(api, cmd, has_votes):
                                             created_at=resp["created_at"],
                                             updated_at=resp["updated_at"])
     ActiveIssueCommands.update(chaos_response=resp_comment).where(
-                              ActiveIssueCommands.comment==cmd.comment.comment_id).execute()
+                               ActiveIssueCommands.comment == cmd.comment.comment_id).execute()
 
 
 def can_run_vote_command(api, cmd):
@@ -113,8 +109,8 @@ def can_run_vote_command(api, cmd):
 
 
 def update_command_ran(api, comment_id, text):
-    cmd = ActiveIssueCommands.get(ActiveIssueCommands.comment==comment_id)
-    inactive_cmd = InactiveIssueCommands.get_or_create(comment=cmd.comment)
+    cmd = ActiveIssueCommands.get(ActiveIssueCommands.comment == comment_id)
+    InactiveIssueCommands.get_or_create(comment=cmd.comment)
     body = "> {command}\n\n{text}".format(command=cmd.comment.text, text=text)
     gh.comments.edit_comment(api, settings.URN, cmd.chaos_response.comment_id, body)
     cmd.delete_instance()
@@ -225,7 +221,7 @@ def poll_read_issue_comments(api):
     __log.info("looking for issue comments")
 
     run_time, created = RunTimes.get_or_create(command="issue_commands")
-    
+
     # No last ran time if just created
     if created:
         last_ran = None
@@ -258,6 +254,6 @@ def poll_read_issue_comments(api):
             cmd.delete_instance()
 
     last_ran = gh.misc.dt_to_github_dt(arrow.utcnow())
-    RunTimes.update(last_ran=last_ran).where(RunTimes.command=="issue_commands").execute()
+    RunTimes.update(last_ran=last_ran).where(RunTimes.command == "issue_commands").execute()
     __log.info("Waiting %d seconds until next scheduled Issue comment polling",
                settings.ISSUE_COMMENT_POLLING_INTERVAL_SECONDS)
