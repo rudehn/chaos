@@ -78,7 +78,7 @@ def has_enough_votes(votes):
 def post_command_status_update(api, cmd, has_votes):
     time = gh.misc.seconds_to_human(cmd.seconds_remaining)
     command_text = cmd.comment.text
-    status = "passing" if has_votes else "failing"
+    status = "passing :white_check_mark:" if has_votes else "failing :no_entry:"
     body = "> {command}\n\nTime remaining: {time} - Vote status: {status}".format(
                                                                             command=command_text,
                                                                             time=time,
