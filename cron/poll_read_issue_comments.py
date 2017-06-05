@@ -243,6 +243,7 @@ def poll_read_issue_comments(api):
     for page in paged_results:
         for issue_comment in page:
             # Get info and store in db
+            # Do a check to make sure comment_id isn't a command that already ran
             if is_command(issue_comment["comment_text"]):
                 insert_or_update(api, issue_comment)
 

@@ -50,10 +50,15 @@ class RunTimes(BaseModel):
     last_ran = pw.CharField(null=True)
 
 
+class MeritocracyMentioned(BaseModel):
+    m_id = pw.PrimaryKeyField()
+    commit_hash = pw.CharField(max_length=40)
+
+
 try:
     DB.connect()
     DB.create_tables([User, Comment, Issue, RunTimes,
-                      ActiveIssueCommands,
+                      ActiveIssueCommands, MeritocracyMentioned,
                       InactiveIssueCommands], safe=True)
     DB.close()
 except Exception as e:
